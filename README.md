@@ -1,142 +1,125 @@
-# Multithreading and Concurrency
+Multithreading and Concurrency
 
-#### This repository contains examples to help you get started with multithreading in Java - though the concepts should be applicable across any modern programming language.
+This repository contains simple examples to help you understand how multithreading and concurrency work in Java.
+Even though the code is in Java, the ideas apply to most programming languages.
 
-*[This repository is still under development]*
+This project is still being updated.
 
-I made this repository to act as a personal reference guide to building scalable and high performance multithreaded
-applications, and I hope this proves useful to others as well.
+About this Repository
 
-## Basics (Creating Threads)
+I created this repository as a personal reference for learning how to build fast, scalable, and thread-safe applications.
+It collects the basic concepts, common patterns, and performance techniques used in multithreading.
 
-- [**Using the Thread class and an anonymous instance of Runnable.**](./src/com/jyotindersingh/Basics1.java)
-- [**Setting UncaughtExceptionHandlers on your threads**](./src/com/jyotindersingh/Basics2.java)
-- [**Defining your own class that extends Thread.**](./src/com/jyotindersingh/Basics3.java)
-- Case Study: [**Bank Robbery**](./src/com/jyotindersingh/BankRobbery.java)
-    - Two threads try to brute force through a password to a vault, while another thread simultaneously tries to catch
-      them.
+1. Creating Threads
 
-## Thread Coordination (Termination, Interrupts, Daemon Threads, Joins)
+This section covers different ways to create and run threads:
 
-- [**Handling interrupts, when your methods already throw/handle external
-  interrupts**](./src/com/jyotindersingh/ThreadCoordination.java)
-- [**Handling external interrupts, by checking for them on a periodic
-  basis**](./src/com/jyotindersingh/ThreadCoordinationIsInterrupted.java) - ideal for methods that might not already
-  handle them.
-- [**Daemon threads**](./src/com/jyotindersingh/ThreadCoordinationDaemon.java) - To allow your application to exit
-  without being blocked due to some thread running in the background.
-- [**Joins**](./src/com/jyotindersingh/ThreadCoordinationJoins.java) - How to guarantee that a thread upon which we
-  depend, completes its work by the time we expect it.
+Using the Thread class and Runnable
 
-## Performance Optimization
+Creating a custom Thread class
 
-### Performance measures in Multithreading:
+Setting an UncaughtExceptionHandler
 
-- Latency - The time to completion of a task. Measured in time units.
-- Throughput - The amount of tasks completed in a given period. Measured in *tasks/time unit*
+A simple case study where two threads try to break a vault password while another thread tries to catch them
 
-**Optimizing for Latency**
+2. Thread Coordination
 
-- [**Image Processing**](./src/com/jyotindersingh/ImageProcessing.java) - We run an image recolouring algorithm over an
-  image in both a sequential and a multithreaded scenario and demostrate the performace gains achieved with the help of
-  more threads.
+Examples that show how threads interact and how to control them:
 
-**Optimizing for Throughput**
+Handling and checking interrupts
 
-Thread Pooling: Creating the threads once and reusing them for future tasks, instead of recreating the threads each and
-every time from scratch.
+Using daemon threads
 
-- [**HTTP Server**](./src/com/jyotindersingh/ThroughputHttpServer.java) - We run a CPU heavy task on a thread pool
-  inside a server and look at the throughput gains as we increase the number of worker threads in the thread pool.
+Using join to wait for a thread to complete
 
-## Data Sharing between Threads (Resource Sharing and Critical Sections)
+3. Performance Improvements
 
-**Monitors:** You can use the *synchronized* API. It provides a locking mechanism designed to prevent access to a block
-of code or an entire method by multiple threads. There are 2 ways to use the synchronized keyword:
+Basic performance terms:
 
-1. [**You can declare one or more methods in a class using the *synchronized*
-   keyword**](./src/com/jyotindersingh/RaceCondition.java). When one or more threads try and call these methods on the
-   same object of this class, **only one thread will be able to execute either of these methods**.
-1. [**Define the block of code that we consider as Critical Section and use the *synchronized*
-   keyword**](./src/com/jyotindersingh/RaceCondition2.java) to restrict access only to that section without making the
-   entire methods synchronized. This provides us with a lot more flexibility ,to have separate critical sections
-   synchronize on different objects.
+Latency: time taken to complete one task
 
-Note: The *synchronized* block is **reentrant** - which means for instance if a Thread A is accessing a synchronized
-method, while already being in a different synchronized method or block, it will be able to access that synchronized
-method with no problem. Basically, a thread cannot prevent itself from entering a critical section.
+Throughput: tasks completed per time unit
 
-**Atomic Operations:** Sadly most operations we perform are often not atomic.
+Reducing Latency
 
-- All reference assignments are atomic (so we can change the object reference in a single operation safely - hence, all
-  our *getters* and *setters* are **atomic**).
-- All assignments to primitive types are atomic and safe, *except long and double*.
-- That means we can read from, and write to the following types atomically:
-    - int
-    - short
-    - byte
-    - float
-    - char
-    - boolean
-- **long** and **double** are exceptions, as they are 64 bit long - for them Java doesn't provide any guarantees (even
-  on 64 bit machines). It's entirely possible that a write to a long or a double takes two internal operations by the
-  CPU - one write to the *lower 32 bits*, and one to the *upper 32 bits*.
-- Fortunately, we are provided with the **volatile** keyword, which we can use when declaring long or double variables -
-  and reads/writes to those variables are atomic, thread-safe - in other words, they are guaranteed to be performed with
-  a single hardware operation. ```volatile double x = 1.0;```
+Includes an example using image recoloring to compare sequential and multithreaded execution.
 
-[**Metrics Aggregation:**](./src/com/jyotindersingh/MetricAggregation.java) Frequently, when running production
-applications we need to make sure how long certain important operations or pieces of code take. The length of those
-operations can depend on client's input data, environment, etc. It is important for us to identify the duration of those
-operations and performance issues and optimize the customer's experience.
+Improving Throughput
 
-**Race Conditions:** A race condition occurs when -
+Shows how thread pools help reuse threads and handle many tasks efficiently.
+Also includes an HTTP server example that uses a thread pool for heavy CPU work.
 
-- Multiple threads are accessing a shared resource
-- At least one thread is modifying the shared resource
-- The timing of the threads' scheduling might cause incorrect results
-- *The core of the problem is **non-atomic operations performed on a shared resource**.
+4. Sharing Data Between Threads
 
-**Data Race:** Problem -
+Covers safe ways to share data:
 
-- Compiler and CPU may execute instructions Out of Order to optimize performance and hardware utilization.
-- The will do so while maintaining the logical correctness of the code.
-- Out of Order execution by the compiler and the CPU are important features to speed up the code.
-- The **compiler** re-arranges instructions for better:
-    - Branch Prediction (optimized loops, "if" conditions, etc.)
-    - Vectorization - parallel instruction execution (SIMD)
-    - Prefetching intructions - better cache performance
-- The **CPU** re-arranges instructions for better hardware units utilization.
+Synchronized (Monitors)
 
-**[DeadLocks](./src/com/jyotindersingh/DeadLock.java)**
+Synchronizing entire methods
 
-**[DeadLock Prevention](./src/com/jyotindersingh/DeadLockPrevention.java)**
+Synchronizing only specific code blocks (critical sections)
 
-## Advanced Locking
+Explanation of reentrant behavior
 
-**Reenterant Lock:**
+Atomic Operations
 
-- Locks that allow greater flexibility to the programmer by providing methods for querying threads in locked/wait state,
-  or querying locks to see which threads are waiting on it. These locks also provide better functionality for handling
-  cases where a thread can't get access to a particular lock.
+Most primitives are atomic except long and double
 
-- **[User Interface Application](./src/com/jyotindersingh/ReenterantLock.java)**: Has two threads that access the same
-  resource. The UI thread reads from the shared resource, while the worker thread writes to the shared resource.
+volatile can make long and double safe
 
-- **[Read and Write Locks](./src/com/jyotindersingh/ReenterantReadWriteLocks.java)**: Having specialized read and write
-  locks can be much more efficient in read intensive workflows.
+Reference assignments are atomic
 
-## Inter-Thread Communication
+Measuring Code Performance
 
-- Semaphores
-- Condition Variables: Powerful and general way of inter-thread communication.
-- **[Matrix Multiplication with Back-Pressure](./src/com/jyotindersingh/MatrixMultiplication.java)**: We use interthread
-  communication techniques which make use of wait and notify - to implement a thread-safe queue for matrix
-  multiplication, where the consumer provides back-pressure to prevent getting overloaded from the producer.
+How to measure execution time of operations when running in production-like conditions.
 
-## Lock-Free Algorithms and Data Structures
+5. Race Conditions and Data Races
 
-Java offers inbuilt support for lock free techniques to achieve thread safe functionality in several tasks.
+Explains when race conditions occur:
 
-- **[Lock-Free Stack Implementation](./src/com/jyotindersingh/LockFreeDataStructure.java)**: A lock free stack that
-  outperforms a blocking stack because of low overhead as compared to maintaining locks. 
+Multiple threads access the same resource
+
+At least one modifies it
+
+Timing affects correctness
+
+Also explains how compilers and CPUs can reorder instructions, which can lead to data races without proper synchronization.
+
+6. Deadlocks
+
+Explains how deadlocks occur and ways to prevent them by controlling lock order and avoiding circular waits.
+
+7. Advanced Locking
+Reentrant Locks
+
+Offer more control than synchronized, such as checking lock ownership and waiting threads.
+
+Read/Write Locks
+
+Useful when many threads read data but only a few modify it.
+
+Example
+
+Shows a UI thread that reads data while a worker thread writes to the same shared resource.
+
+8. Inter-Thread Communication
+
+Ways threads communicate:
+
+Semaphores
+
+Condition variables
+
+Producer–consumer example using wait and notify, including back-pressure logic for matrix multiplication
+
+9. Lock-Free Techniques
+
+Java provides lock-free atomic classes:
+
+AtomicInteger
+
+AtomicLong
+
+AtomicReference
+
+Includes an example of a lock-free stack which performs better than a blocking stack in many cases.
